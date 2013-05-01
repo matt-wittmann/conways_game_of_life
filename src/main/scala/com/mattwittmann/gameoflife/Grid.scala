@@ -105,4 +105,27 @@ trait Grid {
 	 * @return A sequence of tuples containing the coordinates of all living cells in this grid
 	 */
 	def getLivingCellCoordinates(): Seq[Tuple2[Int, Int]]
+
+
+	/**
+	 * @return The grid as a string with X representing living cells and O representing dead cells.
+	 */
+	def mkString(): String = {
+	  val buffer = new StringBuilder
+	  val livingCellCoordinates = getLivingCellCoordinates
+	  val maxX = livingCellCoordinates.maxBy(_._1)._1
+	  val maxY = livingCellCoordinates.maxBy(_._2)._2
+	  val minX = livingCellCoordinates.minBy(_._1)._1
+	  val minY = livingCellCoordinates.minBy(_._2)._2
+	  for (y <- Range(minY - 2, maxY + 2)) {
+	    for (x <- Range(minX - 2, maxX + 2)) {
+	      if (livingCellCoordinates.contains((x, y)))
+	        buffer ++= "X"
+	      else
+	        buffer ++= "O"
+	    }
+	    buffer ++= "\n"
+	  }
+	  buffer.toString
+	}
 }

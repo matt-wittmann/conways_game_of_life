@@ -1,13 +1,10 @@
 package com.mattwittmann.gameoflife
 
 import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.StringBuilder
 
 /**
  * Provides an array implementation of the [[com.mattwittmann.gameoflife.Grid]] trait.
- *
- * TODO How about some kind of graph that allows connections to the next closest living cells
- * in all eight neighboring directions? Right now we're storing redundant information since
- * a dead cell is the default case; also, we are artificially restricted to a presized grid.
  */
 class ArrayGrid(val cells: Array[Array[Boolean]]) extends Grid {
 	/**
@@ -60,6 +57,20 @@ class ArrayGrid(val cells: Array[Array[Boolean]]) extends Grid {
 			}
 		}
 		coordinates.toList
+	}
+
+	override def mkString(): String = {
+	  val buffer = new StringBuilder
+	  for (x <- cells.indices) {
+	    for (y <- cells(x).indices) {
+	      if (alive(x, y))
+	       buffer ++=  "X"
+	      else
+	        buffer ++= "O"
+	    }
+	    buffer ++= "\n"
+	  }
+	  buffer.toString
 	}
 }
 

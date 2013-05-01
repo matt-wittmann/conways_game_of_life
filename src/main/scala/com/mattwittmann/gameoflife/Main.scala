@@ -15,8 +15,11 @@ import collection.mutable.ArrayBuffer
 object Main extends App {
 	var grid = ArrayGrid((1, 4), (2, 3), (2, 4), (5, 4))
 	println(grid.getLivingCellCoordinates)
+	println(grid.mkString)
 	grid = grid.tick
 	println(grid.getLivingCellCoordinates)
+	println(grid.mkString)
 	grid = grid.tick
 	println(grid.getLivingCellCoordinates)
+	println(grid.mkString)
 }
