@@ -1,6 +1,7 @@
 package com.mattwittmann.gameoflife
 
 import org.scalatest.FunSuite
+import scala.collection.mutable.Map
 
 class UT_ArrayGrid extends FunSuite {
 	test("A grid of all dead cells has no living-cell coordinates.") {
@@ -23,5 +24,12 @@ class UT_ArrayGrid extends FunSuite {
 		var grid = ArrayGrid((1, 4), (2, 3), (2, 4), (5, 4))
 		grid = grid.tick
 		assert(List((1,3), (1,4), (2,3), (2,4)) == grid.getLivingCellCoordinates)
+	}
+
+	test("Test implementation of iterator().") {
+		val cells = Map((1, 3) -> false, (7, 9) -> false, (1, 2) -> false, (2, 3) -> false)
+		val grid = ArrayGrid((1, 3), (7, 9), (1, 2), (2, 3))
+		grid.foreach {cell => if (cells.isDefinedAt(cell)) cells(cell) = true; else fail(s"Unexpected living cell: $cell")}
+		assert(cells.filterNot {_._2}.isEmpty)
 	}
 }

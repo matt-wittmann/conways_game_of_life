@@ -1,90 +1,101 @@
 package com.mattwittmann.gameoflife
 
+import scala.collection.mutable.Set
+
 /**
  * Represents the grid of living and dead cells in a two-dimensional, rectangular space
  * for Conway's Game of Life.
  */
-trait Grid {
+trait Grid extends Set[Cell] {
 	/**
 	 * Brings the cell to life in the current state if it is not already.
 	 *
 	 * @param cell The coordinates of the cell
+	 * @return This Grid object
 	 */
-	def enliven(cell: Tuple2[Int, Int]): Unit
+	override def +=(cell: Cell): Grid.this.type
 
 	/**
 	 * Kills the cell in the current state if it is not dead already.
 	 *
 	 * @param cell The coordinates of the cell
+	 * @return This Grid object
 	 */
-	def kill(cell: Tuple2[Int, Int]): Unit
+	override def -=(cell: Cell): Grid.this.type
 
 	/**
 	 * @param cell The coordinates of the cell
 	 * @return Whether the cell at this position is alive
 	 */
-	def alive(cell: Tuple2[Int, Int]): Boolean
+	override def contains(cell: Cell): Boolean
+
+	/**
+	 * Iterates over each living cell in this Grid.
+	 *
+	 * @return Enables iteration over this Grid
+	 */
+	override def iterator(): Iterator[Cell]
 
 	/**
 	 * @param cell The coordinates of the cell
-	 * @return Whether the Cell (x, y+1) is [[com.mattwittmann.gameoflife.Grid.alive]]
+	 * @return Whether the Cell (x, y+1) is alive
 	 */
-	def north(cell: Tuple2[Int, Int]) = alive(cell._1, cell._2 + 1)
+	def north(cell: Cell) = contains(cell._1, cell._2 + 1)
 
 	/**
 	 * @param cell The coordinates of the cell
-	 * @return Whether the Cell (x+1, y+1) is [[com.mattwittmann.gameoflife.Grid.alive]]
+	 * @return Whether the Cell (x+1, y+1) is alive
 	 */
-	def northeast(cell: Tuple2[Int, Int]) = alive(cell._1 + 1, cell._2 + 1)
+	def northeast(cell: Cell) = contains(cell._1 + 1, cell._2 + 1)
 
 	/**
 	 * @param cell The coordinates of the cell
-	 * @return Whether the Cell (x+1, y) is [[com.mattwittmann.gameoflife.Grid.alive]]
+	 * @return Whether the Cell (x+1, y) is alive
 	 */
-	def east(cell: Tuple2[Int, Int]) = alive(cell._1 + 1, cell._2)
+	def east(cell: Cell) = contains(cell._1 + 1, cell._2)
 
 	/**
 	 * @param cell The coordinates of the cell
-	 * @return Whether the Cell (x+1, y-1) is [[com.mattwittmann.gameoflife.Grid.alive]]
+	 * @return Whether the Cell (x+1, y-1) is alive
 	 */
-	def southeast(cell: Tuple2[Int, Int]) = alive(cell._1 + 1, cell._2 - 1)
+	def southeast(cell: Cell) = contains(cell._1 + 1, cell._2 - 1)
 
 	/**
 	 * @param cell The coordinates of the cell
-	 * @return Whether the Cell (x, y-1) is [[com.mattwittmann.gameoflife.Grid.alive]]
+	 * @return Whether the Cell (x, y-1) is alive
 	 */
-	def south(cell: Tuple2[Int, Int]) = alive(cell._1, cell._2 - 1)
+	def south(cell: Cell) = contains(cell._1, cell._2 - 1)
 
 	/**
 	 * @param cell The coordinates of the cell
-	 * @return Whether the Cell (x-1, y-1) is [[com.mattwittmann.gameoflife.Grid.alive]]
+	 * @return Whether the Cell (x-1, y-1) is alive
 	 */
-	def southwest(cell: Tuple2[Int, Int]) = alive(cell._1 - 1, cell._2 - 1)
+	def southwest(cell: Cell) = contains(cell._1 - 1, cell._2 - 1)
 
 	/**
 	 * @param cell The coordinates of the cell
-	 * @return Whether the Cell (x-1, y) is [[com.mattwittmann.gameoflife.Grid.alive]]
+	 * @return Whether the Cell (x-1, y) is alive
 	 */
-	def west(cell: Tuple2[Int, Int]) = alive(cell._1 - 1, cell._2)
+	def west(cell: Cell) = contains(cell._1 - 1, cell._2)
 
 	/**
 	 * @param cell The coordinates of the cell
-	 * @return Whether the Cell (x-1, y+1) is [[com.mattwittmann.gameoflife.Grid.alive]]
+	 * @return Whether the Cell (x-1, y+1) is alive
 	 */
-	def northwest(cell: Tuple2[Int, Int]) = alive(cell._1 - 1, cell._2 + 1)
+	def northwest(cell: Cell) = contains(cell._1 - 1, cell._2 + 1)
 
 	/**
 	 * @param cell The coordinates of the cell
 	 * @return The number of living neighbors of the cell
 	 */
-	def countNeighbors(cell: Tuple2[Int, Int]) =
+	def countNeighbors(cell: Cell) =
 		List(north _, northeast _, east _, southeast _, south _, southwest _, west _, northwest _).filter(_(cell)).length
 
 	/**
 	 * @param cell The coordinates of a cell whose next state is to be determined
 	 * @return true for alive and false for dead
 	 */
-	def nextState(cell: Tuple2[Int, Int]): Boolean = (alive(cell), countNeighbors(cell)) match {
+	def nextState(cell: Cell): Boolean = (contains(cell), countNeighbors(cell)) match {
 		// Any live cell with two or three live neighbors lives on to the next generation.
 		// Any dead cell with exactly three live neighbors becomes a live cell, as if by reproduction.
 		case (_, 3) => true
@@ -104,13 +115,13 @@ trait Grid {
 	/**
 	 * @return A sequence of tuples containing the coordinates of all living cells in this grid
 	 */
-	def getLivingCellCoordinates(): Seq[Tuple2[Int, Int]]
+	def getLivingCellCoordinates(): Seq[Cell]
 
 
 	/**
 	 * @return The grid as a string with X representing living cells and O representing dead cells.
 	 */
-	def mkString(): String = {
+	override def mkString(): String = {
 	  val buffer = new StringBuilder
 	  val livingCellCoordinates = getLivingCellCoordinates
 	  val maxX = livingCellCoordinates.maxBy(_._1)._1

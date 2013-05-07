@@ -7,30 +7,57 @@ import scala.collection.mutable.StringBuilder
  * Provides an array implementation of the [[com.mattwittmann.gameoflife.Grid]] trait.
  */
 class ArrayGrid(val cells: Array[Array[Boolean]]) extends Grid {
+	def iterator() = new Iterator[Cell] {
+	  var cursor = (0, -1)
+
+	  def nextLivingCell(cursor: Cell): Option[Cell] = {
+	    def innerNextLivingCell(cursor: Cell): Option[Cell] = {
+	      val x = cursor._1
+	      val y = cursor._2
+
+	      if (x < cells.length)
+	    	  if (y < cells(x).length)
+	    		  if (cells(x)(y))
+	    			  Some(cursor)
+	    		  else
+	    			  innerNextLivingCell((x, y + 1))
+	    	  else
+	    		  innerNextLivingCell(x + 1, 0)
+	    else
+	    	None
+	    }
+
+	    innerNextLivingCell(cursor._1, cursor._2 + 1)
+	  }
+
+	  def hasNext(): Boolean = !nextLivingCell(cursor).isEmpty
+
+	  def next(): Cell = {
+	    cursor = nextLivingCell(cursor).getOrElse { throw new ArrayIndexOutOfBoundsException("No next living cell in ArrayGrid.") }
+	    cursor
+	  }
+	}
+
 	/**
 	 * @param cell The coordinates of the cell
 	 * @return Whether the cell coordinates would be outside the 100x100 grid
 	 */
-	protected def cellOutOfBounds(cell: Tuple2[Int, Int]) = cell._1 < 0 || cell._2 < 0 || cell._1 >= cells.length || cell._2 >= cells(cell._1).length
+	protected def cellOutOfBounds(cell: Cell) = cell._1 < 0 || cell._2 < 0 || cell._1 >= cells.length || cell._2 >= cells(cell._1).length
 
 	/**
 	 * @param cell The coordinates of the cell
 	 * @param alive true for alive and false for dead
 	 */
-	protected def set(cell: Tuple2[Int, Int], alive: Boolean) {
+	protected def set(cell: Cell, alive: Boolean): ArrayGrid.this.type = {
 		if (!cellOutOfBounds(cell))
 			cells(cell._1)(cell._2) = alive
+		this
 	}
 
-	def enliven(cell: Tuple2[Int, Int]) {
-		set(cell, true)
-	}
+	def +=(cell: Cell): ArrayGrid.this.type = set(cell, true)
+	def -=(cell: Cell): ArrayGrid.this.type = set(cell, false)
 
-	def kill(cell: Tuple2[Int, Int]) {
-		set(cell, false)
-	}
-
-	def alive(cell: Tuple2[Int, Int]) =
+	def contains(cell: Cell) =
 		if (cellOutOfBounds(cell))
 			false
 		else
@@ -47,12 +74,12 @@ class ArrayGrid(val cells: Array[Array[Boolean]]) extends Grid {
 		grid
 	}
 
-	def getLivingCellCoordinates(): Seq[Tuple2[Int, Int]] = {
-		val coordinates = new ArrayBuffer[Tuple2[Int, Int]]
+	def getLivingCellCoordinates(): Seq[Cell] = {
+		val coordinates = new ArrayBuffer[Cell]
 		for (x <- cells.indices) {
 			for (y <- cells(x).indices) {
 				val cell = (x, y)
-				if (alive(cell))
+				if (contains(cell))
 					coordinates += cell
 			}
 		}
@@ -63,7 +90,7 @@ class ArrayGrid(val cells: Array[Array[Boolean]]) extends Grid {
 	  val buffer = new StringBuilder
 	  for (x <- cells.indices) {
 	    for (y <- cells(x).indices) {
-	      if (alive(x, y))
+	      if (contains(x, y))
 	       buffer ++=  "X"
 	      else
 	        buffer ++= "O"
@@ -82,10 +109,10 @@ object ArrayGrid {
 	 * @param livingCells Coordinates of each living cell in a 100x100 grid
 	 * @return A new instance of an ArrayGrid
 	 */
-	def apply(livingCells: Tuple2[Int, Int]*): ArrayGrid = {
+	def apply(livingCells: Cell*): ArrayGrid = {
 		// Defaulting to a 100x100 grid
 		val grid = new ArrayGrid(Array.ofDim[Boolean](100, 100))
-		livingCells.foreach(grid.enliven)
+		livingCells.foreach(grid +=)
 		grid
 	}
 }
